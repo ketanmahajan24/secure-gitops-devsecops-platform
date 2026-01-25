@@ -1,31 +1,90 @@
-pipeline{
+pipeline {
     agent any
-    stages{
-        stage('Build'){
-            steps{
-                echo 'Building..'
+
+    environment {
+        DOCKERHUB_USERNAME = "ketanmahajan24"
+        IMAGE_NAME = "computer-academy-webapp"
+        IMAGE_TAG  = "latest"
+        FULL_IMAGE = "${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+        DOCKER_CREDENTIALS_ID = "dockerhub-creds"
+
+        APP_PORT = "3000"
+        MONGO_URL = "mongodb://10.0.2.177:27017/computer_academy"
+        CONTAINER_NAME = "computer-academy-webapp"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                checkout scm
             }
         }
-        stage('Test'){
-            steps{
-                echo 'Testing..'
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
             }
         }
-        stage('Deploy'){
-            steps{
-                echo 'Deploying....'
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                docker build -t ${FULL_IMAGE} .
+                '''
             }
         }
-    }    
-    post{
-        always{
-            echo 'This will always run'
+
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKER_CREDENTIALS_ID,
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    '''
+                }
+            }
         }
-        success{
-            echo 'This will run only if successful'
+
+        stage('Push Image to Docker Hub') {
+            steps {
+                sh '''
+                docker push ${FULL_IMAGE}
+                '''
+            }
         }
-        failure{
-            echo 'This will run only if failed'
+
+        stage('Deploy Container') {
+            steps {
+                sh '''
+                docker stop ${CONTAINER_NAME} || true
+                docker rm ${CONTAINER_NAME} || true
+
+                docker pull ${FULL_IMAGE}
+
+                docker run -d \
+                -p ${APP_PORT}:${APP_PORT} \
+                --name ${CONTAINER_NAME} \
+                -e MONGO_URL=${MONGO_URL} \
+                -e PORT=${APP_PORT} \
+                ${FULL_IMAGE}
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Application deployed successfully on port 3000"
+        }
+        failure {
+            echo "❌ Pipeline failed"
+        }
+        always {
+            sh 'docker logout || true'
         }
     }
 }
