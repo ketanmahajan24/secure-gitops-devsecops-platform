@@ -21,11 +21,12 @@ pipeline {
             }
         }
 
+       
         stage('Install Dependencies') {
-            steps {
+            dir('frontend') {   // <-- go to the subfolder
                 sh 'npm install'
             }
-        }
+        }   
 
         stage('Build Docker Image') {
             steps {
