@@ -31,6 +31,7 @@ pipeline {
             steps {
                 sh '''
                 docker build -t ${FULL_IMAGE} .
+                docker tag ${FULL_IMAGE}:$BUILD_NUMBER ${FULL_IMAGE}:latest            
                 '''
             }
         }
