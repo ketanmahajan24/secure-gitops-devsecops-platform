@@ -6,7 +6,7 @@ const app = express();
 const mongoose=require("mongoose"); //require mongoDB
 const connectDB = require("./config/db.js");
 connectDB();
-require('dotenv').config();
+
 const path = require("path");
 
 let port=process.env.PORT;
