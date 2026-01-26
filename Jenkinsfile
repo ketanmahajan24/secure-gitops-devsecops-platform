@@ -76,7 +76,6 @@ stage('Push Image to Docker Hub') {
         }
     }
 }
-
         stage('Deploy Container') {
             steps {
                 withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) { 
