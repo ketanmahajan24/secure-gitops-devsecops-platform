@@ -68,7 +68,6 @@ stage('Push Image to Docker Hub') {
             passwordVariable: 'DOCKER_PASS'
         )]) {
             sh '''
-            FULL_IMAGE="$DOCKER_USER/${IMAGE_NAME}"
             docker push ${FULL_IMAGE}:latest
             '''
         }
