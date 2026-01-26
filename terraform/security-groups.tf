@@ -34,6 +34,13 @@ resource "aws_security_group" "k8s_worker" {
   }
 
   ingress {
+    from_port = 10250
+    to_port   = 10250
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  
+  ingress {
     from_port = 22
     to_port   = 22
     protocol  = "tcp"
