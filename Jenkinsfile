@@ -2,14 +2,10 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USERNAME = "ketanmahajan24"
         IMAGE_NAME = "computer-academy-webapp"
         IMAGE_TAG  = "latest"
-        FULL_IMAGE = "${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
         DOCKER_CREDENTIALS_ID = "dockerhub-creds"
-
         APP_PORT = "3000"
-        MONGO_URL = "mongodb://10.0.2.177:27017/computer_academy"
         CONTAINER_NAME = "computer-academy-webapp"
     }
 
@@ -82,20 +78,22 @@ stage('Push Image to Docker Hub') {
 }
 
         stage('Deploy Container') {
-            steps {
-                sh '''
-                docker stop ${CONTAINER_NAME} || true
-                docker rm ${CONTAINER_NAME} || true
+            step
+                swithCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) { {
+                    sh '''
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
 
-                docker pull ${FULL_IMAGE}
+                    docker pull ${FULL_IMAGE}
 
-                docker run -d \
-                  -p ${APP_PORT}:${APP_PORT} \
-                  --name ${CONTAINER_NAME} \
-                  -e MONGO_URL=${MONGO_URL} \
-                  -e PORT=${APP_PORT} \
-                  ${FULL_IMAGE}
-                '''
+                    docker run -d \
+                    -p ${APP_PORT}:${APP_PORT} \
+                    --name ${CONTAINER_NAME} \
+                    -e MONGO_URL=$MONGO_URL \
+                    -e PORT=${APP_PORT} \
+                    ${FULL_IMAGE}
+                    '''
+                }
             }
         }
     }
