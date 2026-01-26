@@ -78,8 +78,8 @@ stage('Push Image to Docker Hub') {
 }
 
         stage('Deploy Container') {
-            step
-                swithCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) { {
+            steps {
+                withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) { 
                     sh '''
                     docker stop ${CONTAINER_NAME} || true
                     docker rm ${CONTAINER_NAME} || true
