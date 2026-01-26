@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USERNAME = "ketanmahajan24"
+ 
         IMAGE_NAME = "computer-academy-webapp"
         IMAGE_TAG  = "latest"
         FULL_IMAGE = "${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
@@ -20,6 +20,12 @@ pipeline {
                 checkout scm
             }
         }
+        	stage ('source code checkout'){
+			steps{
+				echo " source code contains below files " 
+				sh 'ls -la'
+			}		
+		}
 
         stage('Install Dependencies') {
             steps {
@@ -33,8 +39,9 @@ pipeline {
             steps {
                 dir('Computer-Academy-Management') {
                     sh '''
-                    docker build -t ${FULL_IMAGE} .
+                    docker build -t ${FULL_IMAGE}:$BUILD_NUMBER .
                     '''
+                    sh 'docker tag ${FULL_IMAGE}:$BUILD_NUMBER ${FULL_IMAGE}:latest '
                 }
             }
         }
