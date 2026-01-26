@@ -7,6 +7,7 @@ pipeline {
         DOCKER_CREDENTIALS_ID = "dockerhub-creds"
         APP_PORT = "3000"
         CONTAINER_NAME = "computer-academy-webapp"
+        FULL_IMAGE = ""  // Will be set after docker login
     }
 
     stages {
@@ -39,8 +40,7 @@ stage('Build Docker Image') {
                 passwordVariable: 'DOCKER_PASS'
             )]) {
                 sh '''
-                FULL_IMAGE="$DOCKER_USER/${IMAGE_NAME}"
-
+                export FULL_IMAGE="$DOCKER_USER/${IMAGE_NAME}"
                 docker build -t ${FULL_IMAGE}:$BUILD_NUMBER .
                 docker tag ${FULL_IMAGE}:$BUILD_NUMBER ${FULL_IMAGE}:latest
                 '''
