@@ -7,7 +7,7 @@ pipeline {
         DOCKER_CREDENTIALS_ID = "dockerhub-creds"
         APP_PORT = "3000"
         CONTAINER_NAME = "computer-academy-webapp"
-        FULL_IMAGE = ""  // Will be set after docker login
+        FULL_IMAGE = "ketanmahajan24/computer-academy-webapp"
     }
 
     stages {
@@ -40,7 +40,6 @@ stage('Build Docker Image') {
                 passwordVariable: 'DOCKER_PASS'
             )]) {
                 sh '''
-                export FULL_IMAGE="$DOCKER_USER/${IMAGE_NAME}"
                 docker build -t ${FULL_IMAGE}:$BUILD_NUMBER .
                 docker tag ${FULL_IMAGE}:$BUILD_NUMBER ${FULL_IMAGE}:latest
                 '''
@@ -70,7 +69,6 @@ stage('Push Image to Docker Hub') {
         )]) {
             sh '''
             FULL_IMAGE="$DOCKER_USER/${IMAGE_NAME}"
-
             docker push ${FULL_IMAGE}:latest
             '''
         }
@@ -83,19 +81,20 @@ stage('Push Image to Docker Hub') {
                     docker stop ${CONTAINER_NAME} || true
                     docker rm ${CONTAINER_NAME} || true
 
-                    docker pull ${FULL_IMAGE}
+                    docker pull ${FULL_IMAGE}:latest
 
                     docker run -d \
                     -p ${APP_PORT}:${APP_PORT} \
                     --name ${CONTAINER_NAME} \
                     -e MONGO_URL=$MONGO_URL \
                     -e PORT=${APP_PORT} \
-                    ${FULL_IMAGE}
+                    ${FULL_IMAGE}:latest
                     '''
                 }
             }
         }
-    }
+
+}
 
     post {
         success {
