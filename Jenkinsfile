@@ -23,17 +23,19 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                dir('Computer-Academy-Management') {
+                    sh 'npm install'
+                }
             }
         }
-        
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                docker build -t ${FULL_IMAGE} .
-                docker tag ${FULL_IMAGE}:$BUILD_NUMBER ${FULL_IMAGE}:latest            
-                '''
+                dir('Computer-Academy-Management') {
+                    sh '''
+                    docker build -t ${FULL_IMAGE} .
+                    '''
+                }
             }
         }
 
@@ -44,18 +46,14 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh '''
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    '''
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
 
         stage('Push Image to Docker Hub') {
             steps {
-                sh '''
-                docker push ${FULL_IMAGE}
-                '''
+                sh 'docker push ${FULL_IMAGE}'
             }
         }
 
@@ -68,11 +66,11 @@ pipeline {
                 docker pull ${FULL_IMAGE}
 
                 docker run -d \
-                -p ${APP_PORT}:${APP_PORT} \
-                --name ${CONTAINER_NAME} \
-                -e MONGO_URL=${MONGO_URL} \
-                -e PORT=${APP_PORT} \
-                ${FULL_IMAGE}
+                  -p ${APP_PORT}:${APP_PORT} \
+                  --name ${CONTAINER_NAME} \
+                  -e MONGO_URL=${MONGO_URL} \
+                  -e PORT=${APP_PORT} \
+                  ${FULL_IMAGE}
                 '''
             }
         }
