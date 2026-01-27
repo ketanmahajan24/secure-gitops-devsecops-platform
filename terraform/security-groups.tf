@@ -15,6 +15,32 @@ resource "aws_security_group" "k8s_master" {
     cidr_blocks = [var.my_ip]
   }
 
+
+
+   # Flannel VXLAN traffic
+  ingress {
+    from_port   = 8472
+    to_port     = 8472
+    protocol    = "udp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  # Pod-to-Pod traffic
+  ingress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["10.244.0.0/16"]
+  }
+
+  ingress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "udp"
+    cidr_blocks = ["10.244.0.0/16"]
+  }
+
+
   egress { 
     from_port = 0 
     to_port = 0 
@@ -46,7 +72,29 @@ resource "aws_security_group" "k8s_worker" {
     protocol  = "tcp"
     cidr_blocks = [var.my_ip]
   }
-  
+   # Flannel VXLAN traffic
+  ingress {
+    from_port   = 8472
+    to_port     = 8472
+    protocol    = "udp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  # Pod-to-Pod traffic
+  ingress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["10.244.0.0/16"]
+  }
+
+  ingress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "udp"
+    cidr_blocks = ["10.244.0.0/16"]
+  }
+
   egress { 
     from_port = 0 
     to_port = 0 
