@@ -83,7 +83,7 @@ stage('Push Image to Docker Hub') {
                     docker pull ${FULL_IMAGE}:latest
 
                     docker run -d \
-                    -p 31195:${APP_PORT} \
+                    -p ${APP_PORT}:${APP_PORT} \
                     --name ${CONTAINER_NAME} \
                     -e MONGO_URL=$MONGO_URL \
                     -e PORT=${APP_PORT} \
