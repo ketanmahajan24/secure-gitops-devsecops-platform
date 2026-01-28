@@ -34,23 +34,24 @@ pipeline {
                 }
             }
         }
-
-        stage('SonarQube Analysis') {
-            steps {
-                dir('Computer-Academy-Management') {
-                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                        echo "🔍 Running SonarScanner in Docker..."
-                        sh '''
-                            docker run --rm \
-                                -e SONAR_HOST_URL=${SONAR_HOST_URL} \
-                                -e SONAR_LOGIN=$SONAR_TOKEN \
-                                -v "$PWD":/usr/src \
-                                sonarsource/sonar-scanner-cli
-                        '''
-                    }
-                }
+stage('SonarQube Analysis') {
+    steps {
+        dir('Computer-Academy-Management') {
+            withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                echo "🔍 Running SonarScanner in Docker..."
+                sh '''
+                    docker run --rm \\
+                        -e SONAR_HOST_URL=${SONAR_HOST_URL} \\
+                        -e SONAR_LOGIN=$SONAR_TOKEN \\
+                        -e SONAR_PROJECT_KEY=${SONAR_PROJECT_KEY} \\
+                        -v "$PWD":/usr/src \\
+                        sonarsource/sonar-scanner-cli
+                '''
             }
         }
+    }
+}
+
 
         stage('Quality Gate') {
             steps {
