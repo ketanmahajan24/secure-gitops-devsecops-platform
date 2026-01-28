@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        sonarQube 'sonar-scanner'
+    }
+
     environment {
         IMAGE_NAME = "computer-academy-webapp"
         IMAGE_TAG  = "latest"
@@ -8,6 +12,7 @@ pipeline {
         APP_PORT = "3000"
         CONTAINER_NAME = "computer-academy-webapp"
         FULL_IMAGE = "ketanmahajan24/computer-academy-webapp"
+        SONAR_PROJECT_KEY = "computer-academy-webapp"
     }
 
     stages {
@@ -17,12 +22,13 @@ pipeline {
                 checkout scm
             }
         }
-        	stage ('source code checkout'){
-			steps{
-				echo " source code contains below files " 
-				sh 'ls -la'
-			}		
-		}
+
+        stage('Source Code Verification') {
+            steps {
+                echo "Source code contains below files"
+                sh 'ls -la'
+            }
+        }
 
         stage('Install Dependencies') {
             steps {
@@ -31,51 +37,71 @@ pipeline {
                 }
             }
         }
-stage('Build Docker Image') {
-    steps {
-        dir('Computer-Academy-Management') {
-            withCredentials([usernamePassword(
-                credentialsId: DOCKER_CREDENTIALS_ID,
-                usernameVariable: 'DOCKER_USER',
-                passwordVariable: 'DOCKER_PASS'
-            )]) {
-                sh '''
-                docker build -t ${FULL_IMAGE}:$BUILD_NUMBER .
-                docker tag ${FULL_IMAGE}:$BUILD_NUMBER ${FULL_IMAGE}:latest
-                '''
+
+        // 🔥 SONARQUBE ANALYSIS STAGE
+        stage('SonarQube Analysis') {
+            steps {
+                dir('Computer-Academy-Management') {
+                    withSonarQubeEnv('sonarqube') {
+                        sh '''
+                        sonar-scanner \
+                          -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+                          -Dsonar.sources=. \
+                          -Dsonar.language=js \
+                          -Dsonar.exclusions=node_modules/**
+                        '''
+                    }
+                }
             }
         }
-    }
-}
 
-stage('Login to Docker Hub') {
-    steps {
-        withCredentials([usernamePassword(
-            credentialsId: DOCKER_CREDENTIALS_ID,
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-            sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+        // 🔥 QUALITY GATE (PIPELINE BLOCKER)
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
         }
-    }
-}
 
-stage('Push Image to Docker Hub') {
-    steps {
-        withCredentials([usernamePassword(
-            credentialsId: DOCKER_CREDENTIALS_ID,
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-            sh '''
-            docker push ${FULL_IMAGE}:latest
-            '''
+        stage('Build Docker Image') {
+            steps {
+                dir('Computer-Academy-Management') {
+                    withCredentials([usernamePassword(
+                        credentialsId: DOCKER_CREDENTIALS_ID,
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        sh '''
+                        docker build -t ${FULL_IMAGE}:$BUILD_NUMBER .
+                        docker tag ${FULL_IMAGE}:$BUILD_NUMBER ${FULL_IMAGE}:latest
+                        '''
+                    }
+                }
+            }
         }
-    }
-}
+
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKER_CREDENTIALS_ID,
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                }
+            }
+        }
+
+        stage('Push Image to Docker Hub') {
+            steps {
+                sh 'docker push ${FULL_IMAGE}:latest'
+            }
+        }
+
         stage('Deploy Container') {
             steps {
-                withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) { 
+                withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) {
                     sh '''
                     docker stop ${CONTAINER_NAME} || true
                     docker rm ${CONTAINER_NAME} || true
@@ -92,15 +118,14 @@ stage('Push Image to Docker Hub') {
                 }
             }
         }
-
-}
+    }
 
     post {
         success {
             echo "✅ Application deployed successfully on port 3000"
         }
         failure {
-            echo "❌ Pipeline failed"
+            echo "❌ Pipeline failed (possibly due to SonarQube Quality Gate)"
         }
         always {
             sh 'docker logout || true'
