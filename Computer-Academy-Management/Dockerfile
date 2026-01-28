@@ -1,12 +1,12 @@
 # Use official Node.js LTS version as base image
 FROM node:18-alpine
-
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 # Set working directory inside the container
 WORKDIR /app
 
 # Copy only package.json and package-lock.json first (for caching dependencies)
 COPY package*.json ./
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
 
 # Install dependencies (production only)
 RUN npm install --production
