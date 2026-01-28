@@ -9,7 +9,7 @@ pipeline {
         CONTAINER_NAME = "computer-academy-webapp"
         FULL_IMAGE = "ketanmahajan24/computer-academy-webapp"
         SONAR_PROJECT_KEY = "computer-academy-webapp"
-        SONAR_HOST_URL = "http://localhost:9000" // Your SonarQube Docker URL
+        SONAR_HOST_URL = "http://10.0.1.106:9000" // Your SonarQube Docker URL
         SONAR_TOKEN = credentials('sonar-token') // Jenkins credential for Sonar token
     }
 
