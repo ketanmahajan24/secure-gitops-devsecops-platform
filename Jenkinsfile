@@ -1,10 +1,7 @@
 pipeline {
     agent any
 
-    tools {
-        sonarQube 'sonar-scanner'
-    }
-
+     
     environment {
         IMAGE_NAME = "computer-academy-webapp"
         IMAGE_TAG  = "latest"
