@@ -34,32 +34,26 @@ pipeline {
                 }
             }
         }
-stage('SonarQube Analysis') {
-    steps {
-        dir('Computer-Academy-Management') {
-            script {
-                // Make sure the plugin is installed
-                if (!Jenkins.instance.getDescriptorByType(hudson.plugins.sonar.SonarGlobalConfiguration)) {
-                    error "SonarQube plugin not installed or configured"
-                }
-            }
 
-            withSonarQubeEnv("${SONAR_SERVER}") {
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                    sh """
-                    sonar-scanner \
-                      -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                      -Dsonar.sources=. \
-                      -Dsonar.host.url=${SONAR_HOST_URL} \
-                      -Dsonar.login=$SONAR_TOKEN \
-                      -Dsonar.exclusions=node_modules/**
-                    """
+        stage('SonarQube Analysis') {
+            steps {
+                dir('Computer-Academy-Management') {
+                    // ✅ Removed unsafe Jenkins access
+                    withSonarQubeEnv("${SONAR_SERVER}") {
+                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                            sh """
+                            sonar-scanner \
+                              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                              -Dsonar.sources=. \
+                              -Dsonar.host.url=${SONAR_HOST_URL} \
+                              -Dsonar.login=$SONAR_TOKEN \
+                              -Dsonar.exclusions=node_modules/**
+                            """
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
 
         stage('Quality Gate') {
             steps {
