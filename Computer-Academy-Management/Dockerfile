@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy only package.json and package-lock.json first (for caching dependencies)
 COPY package*.json ./
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 # Install dependencies (production only)
 RUN npm install --production
