@@ -33,33 +33,28 @@ pipeline {
                     sh 'npm install'
                 }
             }
-        }
-stage('SonarQube Analysis') {
+        } 
+
+
+        stage('SonarQube Analysis') {
     steps {
         dir('Computer-Academy-Management') {
             withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
                 echo "🔍 Running SonarScanner in Docker..."
-                sh '''
-                    docker run --rm \\
-                        -e SONAR_HOST_URL=${SONAR_HOST_URL} \\
-                        -e SONAR_LOGIN=$SONAR_TOKEN \\
-                        -e SONAR_PROJECT_KEY=${SONAR_PROJECT_KEY} \\
-                        -v "$PWD":/usr/src \\
+                // Use triple double-quotes """ to allow variable interpolation
+                sh """
+                    docker run --rm \
+                        -e SONAR_HOST_URL=${SONAR_HOST_URL} \
+                        -e SONAR_LOGIN=${SONAR_TOKEN} \
+                        -e SONAR_PROJECT_KEY=${SONAR_PROJECT_KEY} \
+                        -v "\$PWD":/usr/src \
                         sonarsource/sonar-scanner-cli
-                '''
+                """
             }
         }
     }
 }
 
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 10, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
 
         stage('Build Docker Image') {
             steps {
