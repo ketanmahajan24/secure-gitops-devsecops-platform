@@ -1,7 +1,6 @@
 pipeline {
     agent any
 
-     
     environment {
         IMAGE_NAME = "computer-academy-webapp"
         IMAGE_TAG  = "latest"
@@ -10,6 +9,7 @@ pipeline {
         CONTAINER_NAME = "computer-academy-webapp"
         FULL_IMAGE = "ketanmahajan24/computer-academy-webapp"
         SONAR_PROJECT_KEY = "computer-academy-webapp"
+        SONAR_SERVER = "SonarQube" // Must match your Jenkins SonarQube configuration
     }
 
     stages {
@@ -22,7 +22,7 @@ pipeline {
 
         stage('Source Code Verification') {
             steps {
-                echo "Source code contains below files"
+                echo "Source code contains below files:"
                 sh 'ls -la'
             }
         }
@@ -34,28 +34,36 @@ pipeline {
                 }
             }
         }
+stage('SonarQube Analysis') {
+    steps {
+        dir('Computer-Academy-Management') {
+            script {
+                // Make sure the plugin is installed
+                if (!Jenkins.instance.getDescriptorByType(hudson.plugins.sonar.SonarGlobalConfiguration)) {
+                    error "SonarQube plugin not installed or configured"
+                }
+            }
 
-        // 🔥 SONARQUBE ANALYSIS STAGE
-        stage('SonarQube Analysis') {
-            steps {
-                dir('Computer-Academy-Management') {
-                    withSonarQubeEnv('sonarqube') {
-                        sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-                          -Dsonar.sources=. \
-                          -Dsonar.language=js \
-                          -Dsonar.exclusions=node_modules/**
-                        '''
-                    }
+            withSonarQubeEnv("${SONAR_SERVER}") {
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh """
+                    sonar-scanner \
+                      -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                      -Dsonar.sources=. \
+                      -Dsonar.host.url=${SONAR_HOST_URL} \
+                      -Dsonar.login=$SONAR_TOKEN \
+                      -Dsonar.exclusions=node_modules/**
+                    """
                 }
             }
         }
+    }
+}
 
-        // 🔥 QUALITY GATE (PIPELINE BLOCKER)
+
         stage('Quality Gate') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
+                timeout(time: 10, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
@@ -69,10 +77,10 @@ pipeline {
                         usernameVariable: 'DOCKER_USER',
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
-                        sh '''
-                        docker build -t ${FULL_IMAGE}:$BUILD_NUMBER .
-                        docker tag ${FULL_IMAGE}:$BUILD_NUMBER ${FULL_IMAGE}:latest
-                        '''
+                        sh """
+                        docker build -t ${FULL_IMAGE}:${BUILD_NUMBER} .
+                        docker tag ${FULL_IMAGE}:${BUILD_NUMBER} ${FULL_IMAGE}:latest
+                        """
                     }
                 }
             }
@@ -92,26 +100,29 @@ pipeline {
 
         stage('Push Image to Docker Hub') {
             steps {
-                sh 'docker push ${FULL_IMAGE}:latest'
+                sh """
+                docker push ${FULL_IMAGE}:${BUILD_NUMBER}
+                docker push ${FULL_IMAGE}:latest
+                """
             }
         }
 
         stage('Deploy Container') {
             steps {
                 withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) {
-                    sh '''
+                    sh """
                     docker stop ${CONTAINER_NAME} || true
                     docker rm ${CONTAINER_NAME} || true
 
                     docker pull ${FULL_IMAGE}:latest
 
                     docker run -d \
-                    -p ${APP_PORT}:${APP_PORT} \
-                    --name ${CONTAINER_NAME} \
-                    -e MONGO_URL=$MONGO_URL \
-                    -e PORT=${APP_PORT} \
-                    ${FULL_IMAGE}:latest
-                    '''
+                        -p ${APP_PORT}:${APP_PORT} \
+                        --name ${CONTAINER_NAME} \
+                        -e MONGO_URL=$MONGO_URL \
+                        -e PORT=${APP_PORT} \
+                        ${FULL_IMAGE}:latest
+                    """
                 }
             }
         }
@@ -119,7 +130,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Application deployed successfully on port 3000"
+            echo "✅ Application deployed successfully on port ${APP_PORT}"
         }
         failure {
             echo "❌ Pipeline failed (possibly due to SonarQube Quality Gate)"
