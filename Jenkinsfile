@@ -9,8 +9,7 @@ pipeline {
         CONTAINER_NAME = "computer-academy-webapp"
         FULL_IMAGE = "ketanmahajan24/computer-academy-webapp"
         SONAR_PROJECT_KEY = "computer-academy-webapp"
-        SONAR_HOST_URL = "http://10.0.1.106:9000" // Your SonarQube Docker URL
-        SONAR_TOKEN = credentials('sonar-token') // Jenkins credential for Sonar token
+        SONAR_HOST_URL = "http://10.0.1.106:9000" // SonarQube Docker IP
     }
 
     stages {
@@ -39,14 +38,16 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('Computer-Academy-Management') {
-                    echo "🔍 Running SonarScanner in Docker..."
-                    sh """
-                        docker run --rm \
-                            -e SONAR_HOST_URL=${SONAR_HOST_URL} \
-                            -e SONAR_LOGIN=${SONAR_TOKEN} \
-                            -v "$PWD":/usr/src \
-                            sonarsource/sonar-scanner-cli
-                    """
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        echo "🔍 Running SonarScanner in Docker..."
+                        sh """
+                            docker run --rm \
+                                -e SONAR_HOST_URL=${SONAR_HOST_URL} \
+                                -e SONAR_LOGIN=$SONAR_TOKEN \
+                                -v "$PWD":/usr/src \
+                                sonarsource/sonar-scanner-cli
+                        """
+                    }
                 }
             }
         }
@@ -68,8 +69,8 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
                         sh """
-                        docker build -t ${FULL_IMAGE}:${BUILD_NUMBER} .
-                        docker tag ${FULL_IMAGE}:${BUILD_NUMBER} ${FULL_IMAGE}:latest
+                            docker build -t ${FULL_IMAGE}:${BUILD_NUMBER} .
+                            docker tag ${FULL_IMAGE}:${BUILD_NUMBER} ${FULL_IMAGE}:latest
                         """
                     }
                 }
@@ -91,8 +92,8 @@ pipeline {
         stage('Push Image to Docker Hub') {
             steps {
                 sh """
-                docker push ${FULL_IMAGE}:${BUILD_NUMBER}
-                docker push ${FULL_IMAGE}:latest
+                    docker push ${FULL_IMAGE}:${BUILD_NUMBER}
+                    docker push ${FULL_IMAGE}:latest
                 """
             }
         }
@@ -101,17 +102,17 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) {
                     sh """
-                    docker stop ${CONTAINER_NAME} || true
-                    docker rm ${CONTAINER_NAME} || true
+                        docker stop ${CONTAINER_NAME} || true
+                        docker rm ${CONTAINER_NAME} || true
 
-                    docker pull ${FULL_IMAGE}:latest
+                        docker pull ${FULL_IMAGE}:latest
 
-                    docker run -d \
-                        -p ${APP_PORT}:${APP_PORT} \
-                        --name ${CONTAINER_NAME} \
-                        -e MONGO_URL=$MONGO_URL \
-                        -e PORT=${APP_PORT} \
-                        ${FULL_IMAGE}:latest
+                        docker run -d \
+                            -p ${APP_PORT}:${APP_PORT} \
+                            --name ${CONTAINER_NAME} \
+                            -e MONGO_URL=$MONGO_URL \
+                            -e PORT=${APP_PORT} \
+                            ${FULL_IMAGE}:latest
                     """
                 }
             }
