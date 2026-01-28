@@ -9,7 +9,8 @@ pipeline {
         CONTAINER_NAME = "computer-academy-webapp"
         FULL_IMAGE = "ketanmahajan24/computer-academy-webapp"
         SONAR_PROJECT_KEY = "computer-academy-webapp"
-        SONAR_SERVER = "SonarQube" // Must match your Jenkins SonarQube configuration
+        SONAR_HOST_URL = "http://localhost:9000" // Your SonarQube Docker URL
+        SONAR_TOKEN = credentials('sonar-token') // Jenkins credential for Sonar token
     }
 
     stages {
@@ -38,19 +39,14 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('Computer-Academy-Management') {
-                    // ✅ Removed unsafe Jenkins access
-                    withSonarQubeEnv("${SONAR_SERVER}") {
-                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                            sh """
-                            sonar-scanner \
-                              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                              -Dsonar.sources=. \
-                              -Dsonar.host.url=${SONAR_HOST_URL} \
-                              -Dsonar.login=$SONAR_TOKEN \
-                              -Dsonar.exclusions=node_modules/**
-                            """
-                        }
-                    }
+                    echo "🔍 Running SonarScanner in Docker..."
+                    sh """
+                        docker run --rm \
+                            -e SONAR_HOST_URL=${SONAR_HOST_URL} \
+                            -e SONAR_LOGIN=${SONAR_TOKEN} \
+                            -v "$PWD":/usr/src \
+                            sonarsource/sonar-scanner-cli
+                    """
                 }
             }
         }
