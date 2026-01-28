@@ -9,7 +9,7 @@ pipeline {
         CONTAINER_NAME = "computer-academy-webapp"
         FULL_IMAGE = "ketanmahajan24/computer-academy-webapp"
         SONAR_PROJECT_KEY = "computer-academy-webapp"     // ✅ YOUR REAL PROJECT
-        SONAR_HOST_URL = "http://10.0.1.106:9000" // SonarQube Docker IP
+        SONAR_HOST_URL = "http://65.0.7.142:9000" // SonarQube Docker IP
     }
 
     stages {
