@@ -582,6 +582,7 @@ app.post('/run', (req, res) => {
     });
 });
 
+
 // Hardcoded password (code smell + vulnerability)
 const dbPassword = "123456"; // SonarQube flags as secret
 
