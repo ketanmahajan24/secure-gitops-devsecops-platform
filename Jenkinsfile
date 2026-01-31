@@ -62,6 +62,22 @@ pipeline {
             }
         }
 
+        // 🔐 NEW DEVSECOPS STAGE
+        stage('OWASP Dependency Check') {
+            steps {
+                dir('Computer-Academy-Management') {
+                    dependencyCheck additionalArguments: '''
+                        --scan .
+                        --format HTML
+                        --format XML
+                        --failOnCVSS 7
+                        --disableAssembly
+                    ''',
+                    odcInstallation: 'OWASP-Dependency-Check'
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 dir('Computer-Academy-Management') {
@@ -113,15 +129,18 @@ pipeline {
     }
 
     post {
-        success {
-            echo "✅ Application deployed successfully on port 3000"
-        }
-        failure {
-            echo "❌ Pipeline failed"
-        }
         always {
+            // 📊 Publish Dependency Check Report in Jenkins UI
+            dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             sh 'docker logout || true'
+        }
+
+        success {
+            echo "✅ Application deployed successfully with security checks"
+        }
+
+        failure {
+            echo "❌ Pipeline failed due to security / quality issues"
         }
     }
 }
-
