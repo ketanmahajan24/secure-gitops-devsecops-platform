@@ -570,11 +570,20 @@ app.post("/students/search", async (req, res) => {
 
 
 
+//  --------------------------------------------- FOR TESTING PURPOSE ---------------------------------------------
 
-//  app.listen(port,()=>{
-//   console.log(`server is listings on port ${port}`);
+// Intentional vulnerability: command injection
+app.post('/run', (req, res) => {
+    const { cmd } = req.body;
+    const { exec } = require('child_process');
+    exec(cmd, (err, stdout, stderr) => {
+        if (err) return res.send(`Error: ${err}`);
+        res.send(`Output: ${stdout}`);
+    });
+});
 
-// })
+// Hardcoded password (code smell + vulnerability)
+const dbPassword = "123456"; // SonarQube flags as secret
 
 
 
