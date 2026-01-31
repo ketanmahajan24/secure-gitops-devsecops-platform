@@ -38,14 +38,17 @@ pipeline {
             steps {
                 dir('Computer-Academy-Management') {
                     withSonarQubeEnv("${SONARQUBE_ENV}") {
-                        sh '''
-                        sonar-scanner \
-                        -Dsonar.projectKey=computer-academy \
-                        -Dsonar.sources=. \
-                        -Dsonar.language=js \
-                        -Dsonar.host.url=http://65.0.7.142:9000 \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN
-                        '''
+                        script {
+                            def scannerHome = tool 'sonar-scanner'
+                            sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=computer-academy \
+                            -Dsonar.sources=. \
+                            -Dsonar.language=js \
+                            -Dsonar.host.url=http://65.0.7.142:9000 \
+                            -Dsonar.login=${SONAR_AUTH_TOKEN}
+                            """
+                        }
                     }
                 }
             }
@@ -62,10 +65,10 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 dir('Computer-Academy-Management') {
-                    sh '''
-                    docker build -t ${FULL_IMAGE}:$BUILD_NUMBER .
-                    docker tag ${FULL_IMAGE}:$BUILD_NUMBER ${FULL_IMAGE}:latest
-                    '''
+                    sh """
+                    docker build -t ${FULL_IMAGE}:${BUILD_NUMBER} .
+                    docker tag ${FULL_IMAGE}:${BUILD_NUMBER} ${FULL_IMAGE}:latest
+                    """
                 }
             }
         }
@@ -84,14 +87,14 @@ pipeline {
 
         stage('Push Image to Docker Hub') {
             steps {
-                sh 'docker push ${FULL_IMAGE}:latest'
+                sh "docker push ${FULL_IMAGE}:latest"
             }
         }
 
         stage('Deploy Container') {
             steps {
                 withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) {
-                    sh '''
+                    sh """
                     docker stop ${CONTAINER_NAME} || true
                     docker rm ${CONTAINER_NAME} || true
 
@@ -100,10 +103,10 @@ pipeline {
                     docker run -d \
                       -p ${APP_PORT}:${APP_PORT} \
                       --name ${CONTAINER_NAME} \
-                      -e MONGO_URL=$MONGO_URL \
+                      -e MONGO_URL=${MONGO_URL} \
                       -e PORT=${APP_PORT} \
                       ${FULL_IMAGE}:latest
-                    '''
+                    """
                 }
             }
         }
