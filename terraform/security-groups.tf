@@ -147,7 +147,7 @@ resource "aws_security_group" "cicd" {
     protocol = "-1" 
     cidr_blocks = ["0.0.0.0/0"] 
   }
-}yes
+}
 resource "aws_security_group" "mongodb-server" {
   name   = "mongodb-sg"
   vpc_id = aws_vpc.main.id

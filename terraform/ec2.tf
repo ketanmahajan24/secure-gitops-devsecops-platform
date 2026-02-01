@@ -49,7 +49,8 @@ resource "aws_instance" "worker2" {
 
 resource "aws_instance" "cicd" {
   ami = var.ami_id
-  instance_type =  "t2.medium"
+  instance_type = "t3.large"
+
   subnet_id = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.cicd.id]
   key_name = aws_key_pair.key.key_name
