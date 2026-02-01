@@ -95,8 +95,14 @@ pipeline {
         // ---------------- CONTAINER SECURITY (TRIVY) ----------------
         stage('Trivy Image Scan') {
             steps {
-                echo "🔐 Scanning Docker image with Trivy"
+                echo "🔐 Scanning Docker image with Trivy (HTML + Gate)"
                 sh """
+                trivy image \
+                  --severity HIGH,CRITICAL \
+                  --format html \
+                  --output trivy-report.html \
+                  ${FULL_IMAGE}:latest
+
                 trivy image \
                   --exit-code 1 \
                   --severity HIGH,CRITICAL \
@@ -148,8 +154,12 @@ pipeline {
 
     post {
         always {
-            // 📊 Publish Dependency Check Report (fixed path)
+            // 📊 Dependency Check GUI
             dependencyCheckPublisher pattern: 'Computer-Academy-Management/dependency-check-report/dependency-check-report.xml'
+
+            // 🔐 Trivy GUI
+            archiveArtifacts artifacts: 'trivy-report.html', fingerprint: true
+
             sh 'docker logout || true'
         }
 
