@@ -48,7 +48,7 @@ pipeline {
                                 -Dsonar.projectKey=computer-academy \
                                 -Dsonar.sources=. \
                                 -Dsonar.language=js \
-                                -Dsonar.host.url=http://65.0.7.142:9000 \
+                                -Dsonar.host.url=http://65.0.124.62:9000 \
                                 -Dsonar.login=${SONAR_AUTH_TOKEN}
                             """
                         }
