@@ -71,6 +71,7 @@ pipeline {
                         --scan .
                         --format HTML
                         --format XML
+                        --out dependency-check-report
                         --failOnCVSS 7
                         --disableAssembly
                     ''',
@@ -147,8 +148,8 @@ pipeline {
 
     post {
         always {
-            // 📊 Publish Dependency Check Report
-            dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            // 📊 Publish Dependency Check Report (fixed path)
+            dependencyCheckPublisher pattern: 'Computer-Academy-Management/dependency-check-report/dependency-check-report.xml'
             sh 'docker logout || true'
         }
 
@@ -161,4 +162,3 @@ pipeline {
         }
     }
 }
-
