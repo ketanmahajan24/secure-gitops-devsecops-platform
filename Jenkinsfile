@@ -34,6 +34,7 @@ pipeline {
             }
         }
 
+        // ---------------- SAST ----------------
         stage('SonarQube Code Analysis') {
             steps {
                 dir('Computer-Academy-Management') {
@@ -62,7 +63,7 @@ pipeline {
             }
         }
 
-        // 🔐 NEW DEVSECOPS STAGE
+        // ---------------- SCA ----------------
         stage('OWASP Dependency Check') {
             steps {
                 dir('Computer-Academy-Management') {
@@ -78,6 +79,7 @@ pipeline {
             }
         }
 
+        // ---------------- DOCKER BUILD ----------------
         stage('Build Docker Image') {
             steps {
                 dir('Computer-Academy-Management') {
@@ -89,22 +91,20 @@ pipeline {
             }
         }
 
-
+        // ---------------- CONTAINER SECURITY (TRIVY) ----------------
         stage('Trivy Image Scan') {
             steps {
                 echo "🔐 Scanning Docker image with Trivy"
                 sh """
                 trivy image \
-                --exit-code 1 \
-                --severity HIGH,CRITICAL \
-                ${FULL_IMAGE}:latest
+                  --exit-code 1 \
+                  --severity HIGH,CRITICAL \
+                  ${FULL_IMAGE}:latest
                 """
             }
-    }
+        }
 
-
-        
-
+        // ---------------- DOCKER PUSH ----------------
         stage('Login to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
@@ -123,6 +123,7 @@ pipeline {
             }
         }
 
+        // ---------------- DEPLOY ----------------
         stage('Deploy Container') {
             steps {
                 withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) {
@@ -146,17 +147,17 @@ pipeline {
 
     post {
         always {
-            // 📊 Publish Dependency Check Report in Jenkins UI
+            // 📊 Publish Dependency Check Report
             dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             sh 'docker logout || true'
         }
 
         success {
-            echo "✅ Application deployed successfully with security checks"
+            echo "✅ Application deployed successfully with full DevSecOps checks"
         }
 
         failure {
-            echo "❌ Pipeline failed due to security / quality issues"
+            echo "❌ Pipeline failed due to security or quality issues"
         }
     }
 }
