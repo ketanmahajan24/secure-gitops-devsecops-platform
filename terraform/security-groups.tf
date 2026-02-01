@@ -151,7 +151,7 @@ resource "aws_security_group" "cicd" {
 resource "aws_security_group" "mongodb-server" {
   name   = "mongodb-sg"
   vpc_id = aws_vpc.main.id
-
+  
   ingress {
     from_port   = 27017
     to_port     = 27017
