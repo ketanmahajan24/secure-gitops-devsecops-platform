@@ -13,6 +13,7 @@ pipeline {
 
     stages {
 
+        // ---------------- CHECKOUT ----------------
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -21,11 +22,12 @@ pipeline {
 
         stage('Source Code Overview') {
             steps {
-                echo "Source code contains below files"
+                echo "Listing project files:"
                 sh 'ls -la'
             }
         }
 
+        // ---------------- INSTALL DEPENDENCIES ----------------
         stage('Install Dependencies') {
             steps {
                 dir('Computer-Academy-Management') {
@@ -34,7 +36,7 @@ pipeline {
             }
         }
 
-        // ---------------- SAST ----------------
+        // ---------------- SAST (SonarQube) ----------------
         stage('SonarQube Code Analysis') {
             steps {
                 dir('Computer-Academy-Management') {
@@ -42,12 +44,12 @@ pipeline {
                         script {
                             def scannerHome = tool 'sonar-scanner'
                             sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=computer-academy \
-                            -Dsonar.sources=. \
-                            -Dsonar.language=js \
-                            -Dsonar.host.url=http://65.0.7.142:9000 \
-                            -Dsonar.login=${SONAR_AUTH_TOKEN}
+                                ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=computer-academy \
+                                -Dsonar.sources=. \
+                                -Dsonar.language=js \
+                                -Dsonar.host.url=http://65.0.7.142:9000 \
+                                -Dsonar.login=${SONAR_AUTH_TOKEN}
                             """
                         }
                     }
@@ -55,27 +57,26 @@ pipeline {
             }
         }
 
-        // stage('Quality Gate') {
-        //     steps {
-        //         timeout(time: 50, unit: 'MINUTES') {
-        //             waitForQualityGate abortPipeline: true
-        //         }
-        //     }
-        // }
-
-        // ---------------- SCA ----------------
+        // ---------------- SCA (OWASP Dependency-Check) ----------------
         stage('OWASP Dependency Check') {
             steps {
                 dir('Computer-Academy-Management') {
-                    dependencyCheck additionalArguments: '''
-                        --scan .
-                        --format HTML
-                        --format XML
-                        --out dependency-check-report
-                        --failOnCVSS 9
-                        --disableAssembly
-                    ''',
-                    odcInstallation: 'OWASP-Dependency-Check'
+                    script {
+                        // Get Jenkins-managed Dependency-Check path
+                        def dcHome = tool name: 'OWASP-Dependency-Check', type: 'hudson.plugins.dependencycheck.DependencyCheckInstallation'
+                        sh """
+                            ${dcHome}/bin/dependency-check.sh \
+                              --scan . \
+                              --format XML \
+                              --format HTML \
+                              --out dependency-check-report \
+                              --failOnCVSS 9 \
+                              --disableAssembly \
+                              --exclude node_modules \
+                              --exclude dist \
+                              --exclude .git
+                        """
+                    }
                 }
             }
         }
@@ -85,28 +86,28 @@ pipeline {
             steps {
                 dir('Computer-Academy-Management') {
                     sh """
-                    docker build -t ${FULL_IMAGE}:${BUILD_NUMBER} .
-                    docker tag ${FULL_IMAGE}:${BUILD_NUMBER} ${FULL_IMAGE}:latest
+                        docker build -t ${FULL_IMAGE}:${BUILD_NUMBER} .
+                        docker tag ${FULL_IMAGE}:${BUILD_NUMBER} ${FULL_IMAGE}:latest
                     """
                 }
             }
         }
 
-        // ---------------- CONTAINER SECURITY (TRIVY) ----------------
+        // ---------------- TRIVY IMAGE SCAN ----------------
         stage('Trivy Image Scan') {
             steps {
-                echo "🔐 Scanning Docker image with Trivy (HTML + Gate)"
+                echo "🔐 Scanning Docker image with Trivy"
                 sh """
-                trivy image \
-                  --severity HIGH,CRITICAL \
-                  --format html \
-                  --output trivy-report.html \
-                  ${FULL_IMAGE}:latest
+                    trivy image \
+                      --severity HIGH,CRITICAL \
+                      --format html \
+                      --output trivy-report.html \
+                      ${FULL_IMAGE}:latest
 
-                trivy image \
-                  --exit-code 1 \
-                  --severity HIGH,CRITICAL \
-                  ${FULL_IMAGE}:latest
+                    trivy image \
+                      --exit-code 1 \
+                      --severity HIGH,CRITICAL \
+                      ${FULL_IMAGE}:latest
                 """
             }
         }
@@ -135,17 +136,15 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) {
                     sh """
-                    docker stop ${CONTAINER_NAME} || true
-                    docker rm ${CONTAINER_NAME} || true
-
-                    docker pull ${FULL_IMAGE}:latest
-
-                    docker run -d \
-                      -p ${APP_PORT}:${APP_PORT} \
-                      --name ${CONTAINER_NAME} \
-                      -e MONGO_URL=${MONGO_URL} \
-                      -e PORT=${APP_PORT} \
-                      ${FULL_IMAGE}:latest
+                        docker stop ${CONTAINER_NAME} || true
+                        docker rm ${CONTAINER_NAME} || true
+                        docker pull ${FULL_IMAGE}:latest
+                        docker run -d \
+                          -p ${APP_PORT}:${APP_PORT} \
+                          --name ${CONTAINER_NAME} \
+                          -e MONGO_URL=${MONGO_URL} \
+                          -e PORT=${APP_PORT} \
+                          ${FULL_IMAGE}:latest
                     """
                 }
             }
@@ -154,21 +153,22 @@ pipeline {
 
     post {
         always {
-            // 📊 Dependency Check GUI
+            // Publish Dependency-Check report
             dependencyCheckPublisher pattern: 'Computer-Academy-Management/dependency-check-report/dependency-check-report.xml'
 
-            // 🔐 Trivy GUI
+            // Archive Trivy report
             archiveArtifacts artifacts: 'trivy-report.html', fingerprint: true
 
+            // Logout from Docker
             sh 'docker logout || true'
         }
 
         success {
-            echo "✅ Application deployed successfully with full DevSecOps checks"
+            echo "✅ Pipeline completed successfully: App deployed with full DevSecOps checks!"
         }
 
         failure {
-            echo "❌ Pipeline failed due to security or quality issues"
+            echo "❌ Pipeline failed due to security or quality issues."
         }
     }
 }
