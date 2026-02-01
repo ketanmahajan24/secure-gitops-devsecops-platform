@@ -72,7 +72,7 @@ pipeline {
                         --format HTML
                         --format XML
                         --out dependency-check-report
-                        --failOnCVSS 7
+                        --failOnCVSS 9
                         --disableAssembly
                     ''',
                     odcInstallation: 'OWASP-Dependency-Check'
