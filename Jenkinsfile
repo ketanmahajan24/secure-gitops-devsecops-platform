@@ -89,6 +89,22 @@ pipeline {
             }
         }
 
+
+        stage('Trivy Image Scan') {
+            steps {
+                echo "🔐 Scanning Docker image with Trivy"
+                sh """
+                trivy image \
+                --exit-code 1 \
+                --severity HIGH,CRITICAL \
+                ${FULL_IMAGE}:latest
+                """
+            }
+    }
+
+
+        
+
         stage('Login to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
