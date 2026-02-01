@@ -130,7 +130,7 @@ pipeline {
                 sh "docker push ${FULL_IMAGE}:latest"
             }
         }
-
+        
         // ---------------- DEPLOY ----------------
         stage('Deploy Container') {
             steps {
