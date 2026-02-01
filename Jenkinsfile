@@ -59,27 +59,26 @@ pipeline {
 
         // ---------------- SCA (OWASP Dependency-Check) ----------------
         stage('OWASP Dependency Check') {
-            steps {
-                dir('Computer-Academy-Management') {
-                    script {
-                        // Get Jenkins-managed Dependency-Check path
-                        def dcHome = tool name: 'OWASP-Dependency-Check', type: 'hudson.plugins.dependencycheck.DependencyCheckInstallation'
-                        sh """
-                            ${dcHome}/bin/dependency-check.sh \
-                              --scan . \
-                              --format XML \
-                              --format HTML \
-                              --out dependency-check-report \
-                              --failOnCVSS 9 \
-                              --disableAssembly \
-                              --exclude node_modules \
-                              --exclude dist \
-                              --exclude .git
-                        """
-                    }
-                }
+    steps {
+        dir('Computer-Academy-Management') {
+            script {
+                def dcHome = tool 'OWASP-Dependency-Check'
+                sh """
+                    ${dcHome}/bin/dependency-check.sh \
+                      --scan . \
+                      --format XML \
+                      --format HTML \
+                      --out dependency-check-report \
+                      --failOnCVSS 9 \
+                      --disableAssembly \
+                      --exclude node_modules \
+                      --exclude dist \
+                      --exclude .git
+                """
             }
         }
+    }
+}
 
         // ---------------- DOCKER BUILD ----------------
         stage('Build Docker Image') {
@@ -130,7 +129,7 @@ pipeline {
                 sh "docker push ${FULL_IMAGE}:latest"
             }
         }
-        
+
         // ---------------- DEPLOY ----------------
         stage('Deploy Container') {
             steps {
