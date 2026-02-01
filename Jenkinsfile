@@ -64,6 +64,7 @@ pipeline {
             script {
                 def dcHome = tool 'OWASP-Dependency-Check'
                 sh """
+                  mkdir -p dependency-check-report
                     ${dcHome}/bin/dependency-check.sh \
                       --scan . \
                       --format XML \
