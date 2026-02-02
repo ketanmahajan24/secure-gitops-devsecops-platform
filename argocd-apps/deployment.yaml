@@ -1,5 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: computer-academy
+  namespace: computer-academy
 spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: computer-academy
   template:
+    metadata:
+      labels:
+        app: computer-academy
     spec:
       containers:
       - name: computer-academy
@@ -10,10 +22,8 @@ spec:
         env:
         - name: PORT
           value: "3000"
-        # ADD THIS MONGODB CONNECTION
-        - name: MONGO_URL
+        - name: MONGO_URL          # ← FIXED: Matches your Jenkins + app
           value: "mongodb://10.0.2.177:27017/computer-academy"
-        # Health checks
         readinessProbe:
           httpGet:
             path: /
