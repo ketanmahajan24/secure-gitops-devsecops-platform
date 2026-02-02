@@ -111,7 +111,7 @@ pipeline {
                             --severity HIGH,CRITICAL \
                             --format json \
                             --output trivy-report.json \
-                            ${FULL_IMAGE}:latest || true
+                            ${FULL_IMAGE}:${BUILD_NUMBER} || true
 
                         # Enforce security gate ONLY for CRITICAL issues
                         /usr/bin/trivy image \
@@ -119,7 +119,7 @@ pipeline {
                             --skip-files app/dependency-check-report/dependency-check-report.html \
                             --severity CRITICAL \
                             --exit-code 1 \
-                            ${FULL_IMAGE}:latest
+                            ${FULL_IMAGE}:${BUILD_NUMBER}
                     """
                 }
             }
