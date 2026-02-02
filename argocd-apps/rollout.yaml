@@ -1,5 +1,5 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: computer-academy
   namespace: computer-academy
@@ -8,6 +8,23 @@ spec:
   selector:
     matchLabels:
       app: computer-academy
+  strategy:
+    canary:
+      canaryService: computer-academy-canary
+      stableService: computer-academy-stable
+      trafficRouting:
+        nginx:
+          ingress: ingress-nginx-controller  # Your nginx-ingress
+      steps:
+      - setWeight: 20
+      - pause: {duration: 300}  # 5 minutes monitoring
+      - setWeight: 40
+      - pause: {duration: 300}
+      - setWeight: 60
+      - pause: {duration: 300}
+      - setWeight: 80
+      - pause: {duration: 300}
+      - setWeight: 100
   template:
     metadata:
       labels:
@@ -15,14 +32,14 @@ spec:
     spec:
       containers:
       - name: computer-academy
-        image: ketanmahajan24/computer-academy-webapp:${BUILD_NUMBER}  # ← Matches Jenkins!
+        image: ketanmahajan24/computer-academy-webapp:${BUILD_NUMBER}
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
         env:
         - name: PORT
           value: "3000"
-        - name: MONGO_URL          # ← FIXED: Matches your Jenkins + app
+        - name: MONGO_URL
           value: "mongodb://10.0.2.177:27017/computer-academy"
         readinessProbe:
           httpGet:
