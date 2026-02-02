@@ -99,7 +99,13 @@ resource "aws_security_group" "k8s_worker" {
     protocol    = "udp"
     cidr_blocks = ["10.0.0.0/16"]
   }
-
+ 
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "udp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
   # Pod-to-Pod traffic
   ingress {
     from_port   = 0
