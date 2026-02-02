@@ -97,25 +97,24 @@ pipeline {
                 }
             }
         }
+ // ---------------- TRIVY IMAGE SCAN ----------------
+stage('Trivy Image Scan') {
+    steps {
+        echo "🔐 Scanning Docker image with Trivy"
+        sh """
+            /usr/bin/trivy image \
+                --severity HIGH,CRITICAL \
+                --format html \
+                --output trivy-report.html \
+                ${FULL_IMAGE}:latest
 
-        // ---------------- TRIVY IMAGE SCAN ----------------
-        stage('Trivy Image Scan') {
-            steps {
-                echo "🔐 Scanning Docker image with Trivy"
-                sh """
-                    trivy image \
-                      --severity HIGH,CRITICAL \
-                      --format html \
-                      --output trivy-report.html \
-                      ${FULL_IMAGE}:latest
-
-                    trivy image \
-                      --exit-code 1 \
-                      --severity HIGH,CRITICAL \
-                      ${FULL_IMAGE}:latest
-                """
-            }
-        }
+            /usr/bin/trivy image \
+                --exit-code 1 \
+                --severity HIGH,CRITICAL \
+                ${FULL_IMAGE}:latest
+        """
+    }
+}
 
         // ---------------- DOCKER PUSH ----------------
         stage('Login to Docker Hub') {
