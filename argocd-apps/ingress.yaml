@@ -3,13 +3,10 @@ kind: Ingress
 metadata:
   name: computer-academy-ingress
   namespace: computer-academy
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   rules:
-    - host: computer-academy.local
-      http:
+    - http:
         paths:
           - path: /
             pathType: Prefix
