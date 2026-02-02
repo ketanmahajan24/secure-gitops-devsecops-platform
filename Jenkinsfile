@@ -144,25 +144,25 @@ pipeline {
             }
         }
 
-    //     // ---------------- DEPLOY ----------------
-    //     stage('Deploy Container') {
-    //         steps {
-    //             withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) {
-    //                 sh """
-    //                     docker stop ${CONTAINER_NAME} || true
-    //                     docker rm ${CONTAINER_NAME} || true
-    //                     docker pull ${FULL_IMAGE}:${BUILD_NUMBER}
-    //                     docker run -d \
-    //                       -p ${APP_PORT}:${APP_PORT} \
-    //                       --name ${CONTAINER_NAME} \
-    //                       -e MONGO_URL=${MONGO_URL} \
-    //                       -e PORT=${APP_PORT} \
-    //                       ${FULL_IMAGE}:${BUILD_NUMBER}
-    //                 """
-    //             }
-    //         }
-    //     }
-    // }
+        // // ---------------- DEPLOY ----------------
+        // stage('Deploy Container') {
+        //     steps {
+        //         withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) {
+        //             sh """
+        //                 docker stop ${CONTAINER_NAME} || true
+        //                 docker rm ${CONTAINER_NAME} || true
+        //                 docker pull ${FULL_IMAGE}:${BUILD_NUMBER}
+        //                 docker run -d \
+        //                   -p ${APP_PORT}:${APP_PORT} \
+        //                   --name ${CONTAINER_NAME} \
+        //                   -e MONGO_URL=${MONGO_URL} \
+        //                   -e PORT=${APP_PORT} \
+        //                   ${FULL_IMAGE}:${BUILD_NUMBER}
+        //             """
+        //         }
+        //     }
+        // }
+    }
 
     post {
         always {
@@ -183,5 +183,4 @@ pipeline {
             echo "❌ Pipeline failed due to security or quality issues."
         }
     }
-}
 }
