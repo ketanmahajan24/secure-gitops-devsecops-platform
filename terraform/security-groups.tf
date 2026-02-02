@@ -154,8 +154,8 @@ ingress {
   cidr_blocks = ["0.0.0.0/0"]
 }
   ingress {
-    from_port = 30115
-    to_port   = 30115
+    from_port = 3030
+    to_port   = 3030
     protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
