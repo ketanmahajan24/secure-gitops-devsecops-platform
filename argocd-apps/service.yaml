@@ -1,9 +1,7 @@
-# 1. Main service (keep existing)
 apiVersion: v1
 kind: Service
 metadata:
   name: computer-academy-service
-  namespace: computer-academy
 spec:
   type: NodePort
   selector:
@@ -12,31 +10,3 @@ spec:
   - port: 80
     targetPort: 3000
     nodePort: 31979
----
-# 2. STABLE service (OLD version - REQUIRED!)
-apiVersion: v1
-kind: Service
-metadata:
-  name: computer-academy-stable  # ← MISSING!
-  namespace: computer-academy
-spec:
-  selector:
-    app: computer-academy
-    track: stable
-  ports:
-  - port: 80
-    targetPort: 3000
----
-# 3. CANARY service (NEW version)
-apiVersion: v1
-kind: Service
-metadata:
-  name: computer-academy-canary   # ← MISSING!
-  namespace: computer-academy
-spec:
-  selector:
-    app: computer-academy
-    track: canary
-  ports:
-  - port: 80
-    targetPort: 3000
