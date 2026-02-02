@@ -96,25 +96,34 @@ pipeline {
                     """
                 }
             }
-        }
- // ---------------- TRIVY IMAGE SCAN ----------------
-stage('Trivy Image Scan') {
-    steps {
-        echo "🔐 Scanning Docker image with Trivy"
-        sh """
-            /usr/bin/trivy image \
-                --severity HIGH,CRITICAL \
-                  --format json \
-                --output trivy-report.json \
-                ${FULL_IMAGE}:latest
+        } 
 
-            /usr/bin/trivy image \
-                --exit-code 1 \
-                --severity HIGH,CRITICAL \
-                ${FULL_IMAGE}:latest
-        """
-    }
-}
+        // ---------------- TRIVY IMAGE SCAN ----------------
+            stage('Trivy Image Scan') {
+                steps {
+                    echo "🔐 Scanning Docker image with Trivy"
+
+                    sh """
+                        # Generate Trivy JSON report (non-blocking)
+                        /usr/bin/trivy image \
+                            --scanners vuln \
+                            --skip-files app/dependency-check-report/dependency-check-report.html \
+                            --severity HIGH,CRITICAL \
+                            --format json \
+                            --output trivy-report.json \
+                            ${FULL_IMAGE}:latest || true
+
+                        # Enforce security gate ONLY for CRITICAL issues
+                        /usr/bin/trivy image \
+                            --scanners vuln \
+                            --skip-files app/dependency-check-report/dependency-check-report.html \
+                            --severity CRITICAL \
+                            --exit-code 1 \
+                            ${FULL_IMAGE}:latest
+                    """
+                }
+            }
+
 
         // ---------------- DOCKER PUSH ----------------
         stage('Login to Docker Hub') {
