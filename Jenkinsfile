@@ -140,29 +140,29 @@ pipeline {
 
         stage('Push Image to Docker Hub') {
             steps {
-                sh "docker push ${FULL_IMAGE}:latest"
+                sh "docker push ${FULL_IMAGE}:${BUILD_NUMBER}"
             }
         }
 
-        // ---------------- DEPLOY ----------------
-        stage('Deploy Container') {
-            steps {
-                withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) {
-                    sh """
-                        docker stop ${CONTAINER_NAME} || true
-                        docker rm ${CONTAINER_NAME} || true
-                        docker pull ${FULL_IMAGE}:latest
-                        docker run -d \
-                          -p ${APP_PORT}:${APP_PORT} \
-                          --name ${CONTAINER_NAME} \
-                          -e MONGO_URL=${MONGO_URL} \
-                          -e PORT=${APP_PORT} \
-                          ${FULL_IMAGE}:latest
-                    """
-                }
-            }
-        }
-    }
+    //     // ---------------- DEPLOY ----------------
+    //     stage('Deploy Container') {
+    //         steps {
+    //             withCredentials([string(credentialsId: 'mongo-url', variable: 'MONGO_URL')]) {
+    //                 sh """
+    //                     docker stop ${CONTAINER_NAME} || true
+    //                     docker rm ${CONTAINER_NAME} || true
+    //                     docker pull ${FULL_IMAGE}:${BUILD_NUMBER}
+    //                     docker run -d \
+    //                       -p ${APP_PORT}:${APP_PORT} \
+    //                       --name ${CONTAINER_NAME} \
+    //                       -e MONGO_URL=${MONGO_URL} \
+    //                       -e PORT=${APP_PORT} \
+    //                       ${FULL_IMAGE}:${BUILD_NUMBER}
+    //                 """
+    //             }
+    //         }
+    //     }
+    // }
 
     post {
         always {
