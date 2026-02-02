@@ -1,21 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app
+  name: computer-academy-webapp
   labels:
-    app: my-app
+    app: computer-academy-webapp
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
-      app: my-app
+      app: computer-academy-webapp
   template:
     metadata:
       labels:
-        app: my-app
+        app: computer-academy-webapp
     spec:
       containers:
-        - name: my-app
-          image: nginx:latest
+        - name: computer-academy-webapp
+          image: ketanmahajan24/computer-academy-webapp:latest
           ports:
             - containerPort: 80
+      imagePullSecrets:
+        - name: regcred
