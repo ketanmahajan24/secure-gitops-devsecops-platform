@@ -168,9 +168,8 @@ pipeline {
         always {
             // Publish Dependency-Check report
             dependencyCheckPublisher pattern: 'Computer-Academy-Management/dependency-check-report/dependency-check-report.xml'
-
-            // Archive Trivy report
-            archiveArtifacts artifacts: 'trivy-report.html', fingerprint: true
+            // Archive Trivy JSON report
+            archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true, allowEmptyArchive: true
 
             // Logout from Docker
             sh 'docker logout || true'
