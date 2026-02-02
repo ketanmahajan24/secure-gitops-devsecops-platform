@@ -104,8 +104,8 @@ stage('Trivy Image Scan') {
         sh """
             /usr/bin/trivy image \
                 --severity HIGH,CRITICAL \
-                --format html \
-                --output trivy-report.html \
+                  --format json \
+                --output trivy-report.json \
                 ${FULL_IMAGE}:latest
 
             /usr/bin/trivy image \
