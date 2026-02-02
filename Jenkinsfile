@@ -75,6 +75,7 @@ pipeline {
                       --format HTML \
                       --out dependency-check-report \
                       --failOnCVSS 9 \
+                      --suppression dependency-check-suppressions.xml \
                       --disableAssembly \
                       --exclude node_modules \
                       --exclude dist \
