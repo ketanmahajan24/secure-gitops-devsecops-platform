@@ -4,19 +4,11 @@
   <suppress>
     <packageUrl>pkg:npm/ejs@3.1.10</packageUrl>
     <cve>CVE-2023-29827</cve>
-    <notes>
-      EJS used only for server-side rendering.
-      No user-controlled template compilation.
-    </notes>
   </suppress>
 
   <suppress>
     <packageUrl>pkg:npm/ejs@4.0.1</packageUrl>
     <cve>CVE-2023-29827</cve>
-    <notes>
-      CVE still reported for latest EJS.
-      Risk accepted due to safe usage context.
-    </notes>
   </suppress>
 
 </suppressions>
