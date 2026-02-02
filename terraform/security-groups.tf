@@ -15,6 +15,13 @@ resource "aws_security_group" "k8s_master" {
     cidr_blocks = [var.my_ip]
   }
 
+ingress {
+  description     = "Allow NodePort access from Bastion"
+  from_port       = 32754
+  to_port         = 32754
+  protocol        = "tcp"
+  security_groups = [aws_security_group.cicd.id]
+}
 
 
    # Flannel VXLAN traffic
@@ -105,6 +112,14 @@ resource "aws_security_group" "k8s_worker" {
 
 resource "aws_security_group" "cicd" {
   vpc_id = aws_vpc.main.id
+
+
+ingress {
+  from_port   = 8081
+  to_port     = 8081
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+}
 
   ingress {
     from_port = 8080
