@@ -8,10 +8,16 @@ spec:
   rules:
     - http:
         paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: computer-academy-service
-                port:
-                  number: 80
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: computer-academy-service
+              port:
+                number: 80
+  # ADD THESE LINES - catches ALL traffic to IP:30115
+  defaultBackend:
+    service:
+      name: computer-academy-service
+      port:
+        number: 80
