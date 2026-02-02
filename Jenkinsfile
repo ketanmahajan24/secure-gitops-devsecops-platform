@@ -92,7 +92,7 @@ pipeline {
                 dir('Computer-Academy-Management') {
                     sh """
                         docker build -t ${FULL_IMAGE}:${BUILD_NUMBER} .
-                        docker tag ${FULL_IMAGE}:${BUILD_NUMBER} ${FULL_IMAGE}:${BUILD_NUMBER}
+                        docker tag ${FULL_IMAGE}:${BUILD_NUMBER} ${FULL_IMAGE}:latest
                     """
                 }
             }
@@ -111,7 +111,7 @@ pipeline {
                             --severity HIGH,CRITICAL \
                             --format json \
                             --output trivy-report.json \
-                            ${FULL_IMAGE}:${BUILD_NUMBER} || true
+                            ${FULL_IMAGE}:latest || true
 
                         # Enforce security gate ONLY for CRITICAL issues
                         /usr/bin/trivy image \
@@ -119,7 +119,7 @@ pipeline {
                             --skip-files app/dependency-check-report/dependency-check-report.html \
                             --severity CRITICAL \
                             --exit-code 1 \
-                            ${FULL_IMAGE}:${BUILD_NUMBER}
+                            ${FULL_IMAGE}:latest
                     """
                 }
             }
@@ -140,7 +140,7 @@ pipeline {
 
         stage('Push Image to Docker Hub') {
             steps {
-                sh "docker push ${FULL_IMAGE}:${BUILD_NUMBER}"
+                sh "docker push ${FULL_IMAGE}:latest"
             }
         }
 
@@ -151,13 +151,13 @@ pipeline {
         //             sh """
         //                 docker stop ${CONTAINER_NAME} || true
         //                 docker rm ${CONTAINER_NAME} || true
-        //                 docker pull ${FULL_IMAGE}:${BUILD_NUMBER}
+        //                 docker pull ${FULL_IMAGE}:latest
         //                 docker run -d \
         //                   -p ${APP_PORT}:${APP_PORT} \
         //                   --name ${CONTAINER_NAME} \
         //                   -e MONGO_URL=${MONGO_URL} \
         //                   -e PORT=${APP_PORT} \
-        //                   ${FULL_IMAGE}:${BUILD_NUMBER}
+        //                   ${FULL_IMAGE}:latest
         //             """
         //         }
         //     }

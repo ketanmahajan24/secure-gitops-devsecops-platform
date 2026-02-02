@@ -29,6 +29,7 @@ spec:
     metadata:
       labels:
         app: computer-academy
+        track: canary      
     spec:
       containers:
       - name: computer-academy
