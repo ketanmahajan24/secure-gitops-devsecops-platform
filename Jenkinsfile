@@ -92,7 +92,7 @@ pipeline {
                 dir('Computer-Academy-Management') {
                     sh """
                         docker build -t ${FULL_IMAGE}:${BUILD_NUMBER} .
-                        docker tag ${FULL_IMAGE}:${BUILD_NUMBER} ${FULL_IMAGE}:latest
+                        docker tag ${FULL_IMAGE}:${BUILD_NUMBER} ${FULL_IMAGE}:${BUILD_NUMBER}
                     """
                 }
             }

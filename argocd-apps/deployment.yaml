@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: computer-academy
-        image: ketanmahajan24/computer-academy-webapp:latest
+        image: ketanmahajan24/computer-academy-webapp:${BUILD_NUMBER}  # ← Matches Jenkins!
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
