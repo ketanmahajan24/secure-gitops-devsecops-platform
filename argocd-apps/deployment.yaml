@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: computer-academy
+  namespace: computer-academy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: computer-academy
+  template:
+    metadata:
+      labels:
+        app: computer-academy
+    spec:
+      containers:
+      - name: computer-academy
+        image: ketanmahajan24/computer-academy-webapp:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        env:
+        - name: PORT
+          value: "3000"
