@@ -11,7 +11,7 @@ spec:
         - name: PORT
           value: "3000"
         # ADD THIS MONGODB CONNECTION
-        - name: MONGO_URI
+        - name: MONGO_URL
           value: "mongodb://10.0.2.177:27017/computer-academy"
         # Health checks
         readinessProbe:
