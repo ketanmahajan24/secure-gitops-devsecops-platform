@@ -144,7 +144,6 @@ pipeline {
             }
         }
 
-
         stage('Update Rollout Image & Push to Git') {
             steps {
                 sh """
@@ -154,14 +153,12 @@ pipeline {
                 sed -i 's|image: ketanmahajan24/computer-academy-webapp:.*|image: ketanmahajan24/computer-academy-webapp:${BUILD_NUMBER}|' argocd-apps/rollouts.yaml
 
                 git add argocd-apps/rollouts.yaml
-
-
-                git add rollouts.yaml
                 git commit -m "Deploy image ${BUILD_NUMBER}"
                 git push origin main
                 """
             }
         }
+
         // // ---------------- DEPLOY ----------------
         // stage('Deploy Container') {
         //     steps {
