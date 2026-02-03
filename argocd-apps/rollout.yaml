@@ -10,9 +10,10 @@ spec:
       app: computer-academy
   strategy:
     canary:
+      # REMOVED nginx trafficRouting - using weight-based only!
       steps:
       - setWeight: 20
-      - pause: {duration: 60}
+      - pause: {duration: 60}    # 1min (faster testing)
       - setWeight: 40
       - pause: {duration: 60}
       - setWeight: 60
@@ -27,7 +28,23 @@ spec:
     spec:
       containers:
       - name: computer-academy
-        image: ketanmahajan24/computer-academy-webapp:latest
+        image: ketanmahajan24/computer-academy-webapp:latest  # ✅ Uses your Jenkins image
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
+        env:
+        - name: PORT
+          value: "3000"
+        - name: MONGO_URL
+          value: "mongodb://10.0.2.177:27017/computer-academy"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 60
