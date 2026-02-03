@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: computer-academy-service
+  name: computer-academy-webapp
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
-    app: computer-academy
+    app: computer-academy-webapp
   ports:
-  - port: 80
-    targetPort: 3000
-    nodePort: 31979
+    - protocol: TCP
+      port: 80
+      targetPort: 80
