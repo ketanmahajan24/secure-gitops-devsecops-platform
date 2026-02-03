@@ -143,31 +143,30 @@ pipeline {
                 sh "docker push ${FULL_IMAGE}:${BUILD_NUMBER}"
             }
         }
-           stage('Update Rollout Image & Push to Git') {
-   stage('Update Rollout Image & Push to Git') {
-    steps {
-        withCredentials([usernamePassword(credentialsId: 'km-GitHub', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-            sh """
-              # Make sure we're on main and up-to-date
-              git fetch origin
-              git checkout -B main origin/main
+        stage('Update Rollout Image & Push to Git') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'km-GitHub', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                    sh """
+                    # Make sure we're on main and up-to-date
+                    git fetch origin
+                    git checkout -B main origin/main
 
-              # Configure git user
-              git config user.email "jenkins@local"
-              git config user.name "jenkins"
+                    # Configure git user
+                    git config user.email "jenkins@local"
+                    git config user.name "jenkins"
 
-              # Update rollout image with current build number
-              sed -i 's|image: ketanmahajan24/computer-academy-webapp:.*|image: ketanmahajan24/computer-academy-webapp:${BUILD_NUMBER}|' argocd-apps/rollouts.yaml
+                    # Update rollout image with current build number
+                    sed -i 's|image: ketanmahajan24/computer-academy-webapp:.*|image: ketanmahajan24/computer-academy-webapp:${BUILD_NUMBER}|' argocd-apps/rollouts.yaml
 
-              git add argocd-apps/rollouts.yaml
-              git commit -m "Deploy image ${BUILD_NUMBER}" || echo "No changes to commit"
+                    git add argocd-apps/rollouts.yaml
+                    git commit -m "Deploy image ${BUILD_NUMBER}" || echo "No changes to commit"
 
-              # Push using PAT embedded in URL
-              git push https://${GIT_USER}:${GIT_PASS}@github.com/ketanmahajan24/secure-gitops-devsecops-platform.git main
-            """
+                    # Push using PAT embedded in URL
+                    git push https://${GIT_USER}:${GIT_PASS}@github.com/ketanmahajan24/secure-gitops-devsecops-platform.git main
+                    """
+                }
+            }
         }
-    }
-}
 
 
         // // ---------------- DEPLOY ----------------
