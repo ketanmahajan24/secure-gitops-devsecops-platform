@@ -1,12 +1,14 @@
+# argocd-apps/service-nodeport.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: computer-academy-webapp
+  name: computer-academy-external
+  namespace: computer-academy
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
-    app: computer-academy-webapp
+    app: computer-academy  # ALL rollout pods
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
+  - port: 80
+    targetPort: 3000
+    nodePort: 31979  # Worldwide students!
