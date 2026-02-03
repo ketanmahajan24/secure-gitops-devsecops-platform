@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: computer-academy
-        image: ketanmahajan24/computer-academy-webapp:217
+        image: ketanmahajan24/computer-academy-webapp:218
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
