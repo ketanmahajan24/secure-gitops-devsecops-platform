@@ -6,16 +6,16 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - http:
+    - host: ""  # Empty host matches all hosts
+      http:
         paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: computer-academy-service
-              port:
-                number: 80
-  # ADD THESE LINES - catches ALL traffic to IP:30115
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: computer-academy-stable
+                port:
+                  number: 80
   defaultBackend:
     service:
       name: computer-academy-service
