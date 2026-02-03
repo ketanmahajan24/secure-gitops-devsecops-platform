@@ -143,21 +143,27 @@ pipeline {
                 sh "docker push ${FULL_IMAGE}:${BUILD_NUMBER}"
             }
         }
+            stage('Update Rollout Image & Push to Git') {
+                steps {
+                    sh """
+                    # 1️⃣ Attach HEAD to main branch
+                    git fetch origin
+                    git checkout -B main origin/main
 
-        stage('Update Rollout Image & Push to Git') {
-            steps {
-                sh """
-                git config user.email "jenkins@local"
-                git config user.name "jenkins"
+                    # 2️⃣ Git user config
+                    git config user.email "jenkins@local"
+                    git config user.name "jenkins"
 
-                sed -i 's|image: ketanmahajan24/computer-academy-webapp:.*|image: ketanmahajan24/computer-academy-webapp:${BUILD_NUMBER}|' argocd-apps/rollouts.yaml
+                    # 3️⃣ Update image in rollout YAML
+                    sed -i 's|image: ketanmahajan24/computer-academy-webapp:.*|image: ketanmahajan24/computer-academy-webapp:${BUILD_NUMBER}|' argocd-apps/rollouts.yaml
 
-                git add argocd-apps/rollouts.yaml
-                git commit -m "Deploy image ${BUILD_NUMBER}"
-                git push origin main
-                """
+                    # 4️⃣ Commit and push
+                    git add argocd-apps/rollouts.yaml
+                    git commit -m "Deploy image ${BUILD_NUMBER}" || echo "No changes to commit"
+                    git push origin main
+                    """
+                }
             }
-        }
 
         // // ---------------- DEPLOY ----------------
         // stage('Deploy Container') {
