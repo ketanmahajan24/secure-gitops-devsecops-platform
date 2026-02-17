@@ -1,3 +1,4 @@
+[Screenshots.docx](https://github.com/user-attachments/files/25360582/Screenshots.docx)
  # 🚀 End-to-End DevSecOps & GitOps Kubernetes Platform
 
 ### With SonarQube, Trivy, Automated CI/CD, Monitoring & Canary Deployments
@@ -211,7 +212,4 @@ The project successfully demonstrates how **DevSecOps and GitOps principles can 
 
 It aligns with modern enterprise practices and provides hands-on experience with industry-standard tools.
 
----
-
-
- 
+---[Screenshots.docx](https://github.com/user-attachments/files/25360600/Screenshots.docx)
