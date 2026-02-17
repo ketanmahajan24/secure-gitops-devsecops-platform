@@ -12,7 +12,7 @@
 
 ---
 
-## 👨‍💻 Project Team – Group No. 07
+## 👨‍💻 Project Team 
 
 * **Sumit Sanjay Badgujar** (258439)
 * **Ketan Gyaneshwar Mahajan** (258451)
@@ -212,4 +212,6 @@ The project successfully demonstrates how **DevSecOps and GitOps principles can 
 It aligns with modern enterprise practices and provides hands-on experience with industry-standard tools.
 
 ---
+
+
  
